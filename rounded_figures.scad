@@ -40,7 +40,7 @@ If all connecting planes of a corner are flat, then a cube is added to fill in t
 
 Parameters:
 size: [x, y, z] size of the cube
-radius: radius of the corners, can not be larger than half the smallest dimension of the cube
+radius: radius of the corners
 flat_plus_x: if true, the plus x side will be flat
 flat_plus_y: if true, the plus y side will be flat
 flat_plus_z: if true, the plus z side will be flat
@@ -72,91 +72,87 @@ module rounded_cube(
     final_y = size[1] - radius * 2;
     final_z = size[2] - radius * 2;
 
-    // Draw spheres that are hull'd to make the rounded corners
-    hull() {
-            translate([radius,radius,radius]) sphere(r=radius, $fn=$fn);
-            translate([final_x + radius , radius , radius]) sphere(r=radius, $fn=$fn);
-            translate([radius , final_y + radius , radius]) sphere(r=radius, $fn=$fn);    
-            translate([final_x + radius , final_y + radius , radius]) sphere(r=radius, $fn=$fn);
-            translate([radius , radius , final_z + radius]) sphere(r=radius, $fn=$fn);
-            translate([final_x + radius , radius , final_z + radius]) sphere(r=radius, $fn=$fn);
-            translate([radius,final_y + radius,final_z + radius]) sphere(r=radius, $fn=$fn);
-            translate([final_x + radius,final_y + radius,final_z + radius]) sphere(r=radius, $fn=$fn);
+    union() {
+        intersection() {
+
+            cube(size);
+
+            union() {
+                hull() {
+                        translate([radius,radius,radius]) sphere(r=radius, $fn=$fn);
+                        translate([final_x + radius , radius , radius]) sphere(r=radius, $fn=$fn);
+                        translate([radius , final_y + radius , radius]) sphere(r=radius, $fn=$fn);    
+                        translate([final_x + radius , final_y + radius , radius]) sphere(r=radius, $fn=$fn);
+                        translate([radius , radius , final_z + radius]) sphere(r=radius, $fn=$fn);
+                        translate([final_x + radius , radius , final_z + radius]) sphere(r=radius, $fn=$fn);
+                        translate([radius,final_y + radius,final_z + radius]) sphere(r=radius, $fn=$fn);
+                        translate([final_x + radius,final_y + radius,final_z + radius]) sphere(r=radius, $fn=$fn);
+                    }
+
+                // Draw spheres that are hull'd to make the rounded corners
+
+
+                hull() {
+                    if (flat_plus_x) {
+                        translate([size[0] - radius, 0, size[2]]) rotate([0, 90, 0]) linear_extrude(radius) rounded_rectangle([size[2], size[1]], radius, $fn=$fn);
+                    }
+                    if (flat_minus_x) {
+                        translate([0, 0, size[2]]) rotate([0, 90, 0]) linear_extrude(radius) rounded_rectangle([size[2], size[1]], radius, $fn=$fn);
+                    }
+                    if (flat_plus_y) {
+                        translate([0, size[1], 0]) rotate([90, 0, 0]) linear_extrude(radius) rounded_rectangle([size[0], size[2]], radius, $fn=$fn);
+                    }
+                    if (flat_minus_y) {
+                        translate([0, radius, 0]) rotate([90, 0, 0]) linear_extrude(radius) rounded_rectangle([size[0], size[2]], radius, $fn=$fn);
+                    }
+                    if (flat_plus_z) {
+                        translate([0, 0, size[2] - radius]) linear_extrude(radius) rounded_rectangle([size[0], size[1]], radius, $fn=$fn);
+                    }
+                    if (flat_minus_z) {
+                        translate([0, 0, 0]) linear_extrude(radius) rounded_rectangle([size[0], size[1]], radius, $fn=$fn);
+                    }
+                }
+
+                hull() {
+                    // For all 8 corners, if they're all flat, then add a cube to fill in the corner
+                    // Bottom front left
+                    if (flat_minus_x && flat_minus_y && flat_minus_z) {
+                        translate([0, 0, 0]) cube([radius, radius, radius]);
+                    }
+                    // Bottom front right
+                    if (flat_plus_x && flat_minus_y && flat_minus_z) {
+                        translate([size[0] - radius, 0, 0]) cube([radius, radius, radius]);
+                    }
+                    // Bottom back left
+                    if (flat_minus_x && flat_plus_y && flat_minus_z) {
+                        translate([0, size[1] - radius, 0]) cube([radius, radius, radius]);
+                    }
+                    // Bottom back right
+                    if (flat_plus_x && flat_plus_y && flat_minus_z) {
+                        translate([size[0] - radius, size[1] - radius, 0]) cube([radius, radius, radius]);
+                    }
+                    // Top front left
+                    if (flat_minus_x && flat_minus_y && flat_plus_z) {
+                        translate([0, 0, size[2] - radius]) cube([radius, radius, radius]);
+                    }
+                    // Top front right
+                    if (flat_plus_x && flat_minus_y && flat_plus_z) {
+                        translate([size[0] - radius, 0, size[2] - radius]) cube([radius, radius, radius]);
+                    }
+                    // Top back left
+                    if (flat_minus_x && flat_plus_y && flat_plus_z) {
+                        translate([0, size[1] - radius, size[2] - radius]) cube([radius, radius, radius]);
+                    }
+                    // Top back right
+                    if (flat_plus_x && flat_plus_y && flat_plus_z) {
+                        translate([size[0] - radius, size[1] - radius, size[2] - radius]) cube([radius, radius, radius]);
+                    }
+                }
+
+            }
+
         }
 
-    hull() {
-        if (flat_plus_x) {
-            translate([size[0] - radius, 0, size[2]]) rotate([0, 90, 0]) linear_extrude(radius) rounded_rectangle([size[2], size[1]], radius, $fn=$fn);
-        }
-        if (flat_minus_x) {
-            translate([0, 0, size[2]]) rotate([0, 90, 0]) linear_extrude(radius) rounded_rectangle([size[2], size[1]], radius, $fn=$fn);
-        }
-        if (flat_plus_y) {
-            translate([0, size[1], 0]) rotate([90, 0, 0]) linear_extrude(radius) rounded_rectangle([size[0], size[2]], radius, $fn=$fn);
-        }
-        if (flat_minus_y) {
-            translate([0, radius, 0]) rotate([90, 0, 0]) linear_extrude(radius) rounded_rectangle([size[0], size[2]], radius, $fn=$fn);
-        }
-        if (flat_plus_z) {
-            translate([0, 0, size[2] - radius]) linear_extrude(radius) rounded_rectangle([size[0], size[1]], radius, $fn=$fn);
-        }
-        if (flat_minus_z) {
-            translate([0, 0, 0]) linear_extrude(radius) rounded_rectangle([size[0], size[1]], radius, $fn=$fn);
-        }
     }
-
-    hull() {
-        // For all 8 corners, if they're all flat, then add a cube to fill in the corner
-        // Bottom front left
-        if (flat_minus_x && flat_minus_y && flat_minus_z) {
-            translate([0, 0, 0]) cube([radius, radius, radius]);
-        }
-        // Bottom front right
-        if (flat_plus_x && flat_minus_y && flat_minus_z) {
-            translate([size[0] - radius, 0, 0]) cube([radius, radius, radius]);
-        }
-        // Bottom back left
-        if (flat_minus_x && flat_plus_y && flat_minus_z) {
-            translate([0, size[1] - radius, 0]) cube([radius, radius, radius]);
-        }
-        // Bottom back right
-        if (flat_plus_x && flat_plus_y && flat_minus_z) {
-            translate([size[0] - radius, size[1] - radius, 0]) cube([radius, radius, radius]);
-        }
-        // Top front left
-        if (flat_minus_x && flat_minus_y && flat_plus_z) {
-            translate([0, 0, size[2] - radius]) cube([radius, radius, radius]);
-        }
-        // Top front right
-        if (flat_plus_x && flat_minus_y && flat_plus_z) {
-            translate([size[0] - radius, 0, size[2] - radius]) cube([radius, radius, radius]);
-        }
-        // Top back left
-        if (flat_minus_x && flat_plus_y && flat_plus_z) {
-            translate([0, size[1] - radius, size[2] - radius]) cube([radius, radius, radius]);
-        }
-        // Top back right
-        if (flat_plus_x && flat_plus_y && flat_plus_z) {
-            translate([size[0] - radius, size[1] - radius, size[2] - radius]) cube([radius, radius, radius]);
-        }
-    }
-
-}
-
-
-module hulled_cube(size,
-    radius = 5
-    ) {
-
-        hull() {
-
-            translate([radius, 0, radius]) cube([size[0] - radius*2, radius, size[2] - radius*2]); // Front
-            translate([radius, size[1] - radius, radius]) cube([size[0] - radius*2, radius, size[2] - radius*2]); // Back
-            translate([0, radius, radius]) cube([radius, size[1] - radius*2, size[2] - radius*2]); // Left
-            translate([size[0] - radius, radius, radius]) cube([radius, size[1] - radius*2, size[2] - radius*2]); // Right
-            translate([radius, radius, size[2] - radius]) cube([size[0] - radius*2, size[1] - radius*2, radius]); // Top
-            translate([radius, radius, 0]) cube([size[0] - radius*2, size[1] - radius*2, radius]); // Bottom
-            
-        }
 
 }
