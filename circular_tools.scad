@@ -22,6 +22,6 @@ module circular_arc(
     angle,
     $fn=$fn) {
     rotate_extrude(angle = angle, convexity = 10, $fn=$fn) {
-        translate([0, 0, 0]) square([r, h]);
+        translate([0, 0, 0]) square([radius, height]);
     }
 }
